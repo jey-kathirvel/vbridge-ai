@@ -1,0 +1,484 @@
+[
+  {
+    "id": "BUSINESS-001",
+    "stakeholderType": "BUSINESS_USER",
+    "profile": {
+      "displayName": "Arun Mehta",
+      "organizationName": "GlobalTrade Connect India Pvt Ltd",
+      "location": {
+        "city": "Mumbai",
+        "stateOrRegion": "Maharashtra",
+        "country": "India"
+      },
+      "industry": "International Trade",
+      "subIndustry": "Market Expansion Advisory"
+    },
+    "business": {
+      "stage": "Growth",
+      "employeeCount": 42,
+      "annualRevenueInr": 85000000,
+      "foundedYear": 2018,
+      "productsOrServices": [
+        "Market entry advisory",
+        "Cross-border business development"
+      ],
+      "currentMarkets": ["India"],
+      "targetMarkets": ["United Arab Emirates", "Singapore", "United Kingdom"]
+    },
+    "goals": {
+      "primaryGoal": "Identify international business expansion opportunities",
+      "secondaryGoals": [
+        "Find strategic partners",
+        "Discover enterprise prospects"
+      ],
+      "targetStakeholders": ["PARTNER", "BUSINESS_USER", "SERVICE_PROVIDER"]
+    },
+    "aiResearch": {
+      "matchmaking": {
+        "enabled": true,
+        "desiredMatches": [
+          "International expansion partners",
+          "Trade advisory organizations"
+        ]
+      },
+      "investmentReadiness": {
+        "enabled": false
+      },
+      "leadGeneration": {
+        "enabled": true,
+        "targetCountries": ["United Arab Emirates", "Singapore"],
+        "targetIndustries": ["International Trade", "Business Consulting"],
+        "targetTitles": ["Managing Director", "Business Development Director"]
+      },
+      "eventsAndNews": {
+        "enabled": true,
+        "topics": ["Cross-border trade", "Market expansion"],
+        "trackedMarkets": ["United Arab Emirates", "Singapore"]
+      }
+    },
+    "metadata": {
+      "synthetic": true,
+      "source": "V-BRIDGE_AI_LAB",
+      "version": "1.0"
+    }
+  },
+  {
+    "id": "MSME-001",
+    "stakeholderType": "MSME",
+    "profile": {
+      "displayName": "Meenakshi Raman",
+      "organizationName": "Tamil Harvest Foods Pvt Ltd",
+      "location": {
+        "city": "Madurai",
+        "stateOrRegion": "Tamil Nadu",
+        "country": "India"
+      },
+      "industry": "Food Processing",
+      "subIndustry": "Millet and Organic Foods"
+    },
+    "business": {
+      "stage": "Growth",
+      "employeeCount": 75,
+      "annualRevenueInr": 120000000,
+      "foundedYear": 2016,
+      "productsOrServices": [
+        "Millet snacks",
+        "Organic foods",
+        "Ready-to-eat products"
+      ],
+      "currentMarkets": ["India"],
+      "targetMarkets": ["United Arab Emirates", "Singapore", "Malaysia"]
+    },
+    "goals": {
+      "primaryGoal": "Find importers and distributors for international expansion",
+      "secondaryGoals": [
+        "Build export partnerships",
+        "Identify overseas buyers"
+      ],
+      "targetStakeholders": ["PARTNER", "BUSINESS_USER"]
+    },
+    "aiResearch": {
+      "matchmaking": {
+        "enabled": true,
+        "desiredMatches": [
+          "Food distributors",
+          "Importers",
+          "Retail channel partners"
+        ]
+      },
+      "investmentReadiness": {
+        "enabled": true,
+        "fundingRequiredInr": 50000000,
+        "pitchDeckAvailable": true,
+        "financialModelStatus": "Partial",
+        "dataRoomStatus": "In Progress",
+        "tractionSummary": "Established domestic revenue with export expansion plan"
+      },
+      "leadGeneration": {
+        "enabled": true,
+        "targetCountries": ["United Arab Emirates", "Singapore", "Malaysia"],
+        "targetIndustries": ["Food and Beverage", "Import and Export", "Retail"],
+        "targetTitles": [
+          "Managing Director",
+          "Procurement Director",
+          "Import Manager",
+          "Category Head"
+        ]
+      },
+      "eventsAndNews": {
+        "enabled": true,
+        "topics": [
+          "Food distribution",
+          "Organic food",
+          "Export markets"
+        ],
+        "trackedMarkets": ["United Arab Emirates", "Singapore", "Malaysia"]
+      }
+    },
+    "metadata": {
+      "synthetic": true,
+      "source": "V-BRIDGE_AI_LAB",
+      "version": "1.0"
+    }
+  },
+  {
+    "id": "STARTUP-001",
+    "stakeholderType": "STARTUP",
+    "profile": {
+      "displayName": "Karthik Subramanian",
+      "organizationName": "AgriSense Technologies Pvt Ltd",
+      "location": {
+        "city": "Coimbatore",
+        "stateOrRegion": "Tamil Nadu",
+        "country": "India"
+      },
+      "industry": "AgriTech",
+      "subIndustry": "IoT Precision Farming"
+    },
+    "business": {
+      "stage": "Seed",
+      "employeeCount": 18,
+      "annualRevenueInr": 12000000,
+      "foundedYear": 2023,
+      "productsOrServices": [
+        "IoT farm sensors",
+        "Precision farming analytics",
+        "Crop intelligence platform"
+      ],
+      "currentMarkets": ["India"],
+      "targetMarkets": ["United Arab Emirates", "Saudi Arabia", "Kenya"]
+    },
+    "goals": {
+      "primaryGoal": "Raise growth capital and expand internationally",
+      "secondaryGoals": [
+        "Find strategic partners",
+        "Find enterprise customers"
+      ],
+      "targetStakeholders": ["INVESTOR", "PARTNER", "BUSINESS_USER"]
+    },
+    "aiResearch": {
+      "matchmaking": {
+        "enabled": true,
+        "desiredMatches": [
+          "AgriTech investors",
+          "Agriculture distribution partners",
+          "Strategic enterprise partners"
+        ]
+      },
+      "investmentReadiness": {
+        "enabled": true,
+        "fundingRequiredInr": 50000000,
+        "pitchDeckAvailable": true,
+        "financialModelStatus": "Partial",
+        "dataRoomStatus": "Incomplete",
+        "tractionSummary": "12 paying customers with early recurring revenue"
+      },
+      "leadGeneration": {
+        "enabled": true,
+        "targetCountries": ["United Arab Emirates", "Saudi Arabia", "Kenya"],
+        "targetIndustries": ["Agriculture", "AgriTech", "Food Production"],
+        "targetTitles": [
+          "Chief Executive Officer",
+          "Innovation Director",
+          "Partnerships Director",
+          "Agriculture Operations Director"
+        ]
+      },
+      "eventsAndNews": {
+        "enabled": true,
+        "topics": [
+          "AgriTech",
+          "Food security",
+          "Precision farming",
+          "Startup funding"
+        ],
+        "trackedMarkets": ["United Arab Emirates", "Saudi Arabia", "Kenya"]
+      }
+    },
+    "metadata": {
+      "synthetic": true,
+      "source": "V-BRIDGE_AI_LAB",
+      "version": "1.0"
+    }
+  },
+  {
+    "id": "INVESTOR-001",
+    "stakeholderType": "INVESTOR",
+    "profile": {
+      "displayName": "Priya Nair",
+      "organizationName": "GrowthBridge Ventures",
+      "location": {
+        "city": "Bengaluru",
+        "stateOrRegion": "Karnataka",
+        "country": "India"
+      },
+      "industry": "Venture Capital",
+      "subIndustry": "Early Stage Technology Investment"
+    },
+    "business": {
+      "stage": "Established",
+      "employeeCount": 24,
+      "foundedYear": 2019,
+      "productsOrServices": [
+        "Seed investment",
+        "Series A investment",
+        "Portfolio growth support"
+      ],
+      "currentMarkets": ["India"],
+      "targetMarkets": ["India", "Singapore", "Southeast Asia"]
+    },
+    "goals": {
+      "primaryGoal": "Discover high-potential technology startups",
+      "secondaryGoals": [
+        "Identify co-investors",
+        "Track portfolio-relevant market signals"
+      ],
+      "targetStakeholders": ["STARTUP", "INVESTOR", "PARTNER"]
+    },
+    "aiResearch": {
+      "matchmaking": {
+        "enabled": true,
+        "desiredMatches": [
+          "Seed-stage SaaS startups",
+          "AI startups",
+          "FinTech startups",
+          "Co-investment partners"
+        ]
+      },
+      "investmentReadiness": {
+        "enabled": false
+      },
+      "leadGeneration": {
+        "enabled": true,
+        "targetCountries": ["India", "Singapore"],
+        "targetIndustries": ["Software", "Artificial Intelligence", "FinTech"],
+        "targetTitles": ["Founder", "Co-Founder", "Chief Executive Officer"]
+      },
+      "eventsAndNews": {
+        "enabled": true,
+        "topics": [
+          "Startup funding",
+          "Artificial intelligence",
+          "SaaS",
+          "FinTech"
+        ],
+        "trackedMarkets": ["India", "Singapore", "Southeast Asia"]
+      }
+    },
+    "metadata": {
+      "synthetic": true,
+      "source": "V-BRIDGE_AI_LAB",
+      "version": "1.0"
+    }
+  },
+  {
+    "id": "PARTNER-001",
+    "stakeholderType": "PARTNER",
+    "profile": {
+      "displayName": "Omar Rahman",
+      "organizationName": "Gulf Market Access Partners",
+      "location": {
+        "city": "Dubai",
+        "stateOrRegion": "Dubai",
+        "country": "United Arab Emirates"
+      },
+      "industry": "Business Consulting",
+      "subIndustry": "Market Entry and Distribution Partnerships"
+    },
+    "business": {
+      "stage": "Established",
+      "employeeCount": 36,
+      "foundedYear": 2017,
+      "productsOrServices": [
+        "UAE market entry",
+        "Distributor identification",
+        "Commercial partnerships"
+      ],
+      "currentMarkets": ["United Arab Emirates", "Saudi Arabia"],
+      "targetMarkets": ["India", "Singapore"]
+    },
+    "goals": {
+      "primaryGoal": "Find Indian companies seeking Middle East expansion",
+      "secondaryGoals": [
+        "Build channel partnerships",
+        "Source export-ready companies"
+      ],
+      "targetStakeholders": ["MSME", "STARTUP", "BUSINESS_USER"]
+    },
+    "aiResearch": {
+      "matchmaking": {
+        "enabled": true,
+        "desiredMatches": [
+          "Export-ready Indian MSMEs",
+          "Internationally scalable startups"
+        ]
+      },
+      "investmentReadiness": {
+        "enabled": false
+      },
+      "leadGeneration": {
+        "enabled": true,
+        "targetCountries": ["India"],
+        "targetIndustries": ["Food Processing", "Manufacturing", "Software"],
+        "targetTitles": ["Founder", "Managing Director", "Export Director"]
+      },
+      "eventsAndNews": {
+        "enabled": true,
+        "topics": ["India UAE trade", "Market expansion", "Distribution"],
+        "trackedMarkets": ["India", "United Arab Emirates"]
+      }
+    },
+    "metadata": {
+      "synthetic": true,
+      "source": "V-BRIDGE_AI_LAB",
+      "version": "1.0"
+    }
+  },
+  {
+    "id": "MENTOR-001",
+    "stakeholderType": "MENTOR",
+    "profile": {
+      "displayName": "Ananya Iyer",
+      "organizationName": "ScalePath Founder Advisory",
+      "location": {
+        "city": "Chennai",
+        "stateOrRegion": "Tamil Nadu",
+        "country": "India"
+      },
+      "industry": "Management Consulting",
+      "subIndustry": "Startup and Founder Advisory"
+    },
+    "business": {
+      "stage": "Established",
+      "employeeCount": 8,
+      "foundedYear": 2020,
+      "productsOrServices": [
+        "Founder mentoring",
+        "Go-to-market advisory",
+        "Fundraising preparation"
+      ],
+      "currentMarkets": ["India"],
+      "targetMarkets": ["India", "Singapore", "United Arab Emirates"]
+    },
+    "goals": {
+      "primaryGoal": "Mentor growth-stage founders and export-ready MSMEs",
+      "secondaryGoals": [
+        "Find startup ecosystems",
+        "Connect with investors"
+      ],
+      "targetStakeholders": ["STARTUP", "MSME", "INVESTOR"]
+    },
+    "aiResearch": {
+      "matchmaking": {
+        "enabled": true,
+        "desiredMatches": [
+          "Founders needing growth mentoring",
+          "MSMEs preparing for expansion"
+        ]
+      },
+      "investmentReadiness": {
+        "enabled": false
+      },
+      "leadGeneration": {
+        "enabled": true,
+        "targetCountries": ["India"],
+        "targetIndustries": ["Software", "AgriTech", "Manufacturing"],
+        "targetTitles": ["Founder", "Co-Founder", "Managing Director"]
+      },
+      "eventsAndNews": {
+        "enabled": true,
+        "topics": ["Startup growth", "Fundraising", "Founder ecosystem"],
+        "trackedMarkets": ["India", "Singapore"]
+      }
+    },
+    "metadata": {
+      "synthetic": true,
+      "source": "V-BRIDGE_AI_LAB",
+      "version": "1.0"
+    }
+  },
+  {
+    "id": "SERVICE-001",
+    "stakeholderType": "SERVICE_PROVIDER",
+    "profile": {
+      "displayName": "Rohit Kapoor",
+      "organizationName": "ExportEdge Compliance Services",
+      "location": {
+        "city": "New Delhi",
+        "stateOrRegion": "Delhi",
+        "country": "India"
+      },
+      "industry": "Professional Services",
+      "subIndustry": "Export Compliance and Market Entry"
+    },
+    "business": {
+      "stage": "Growth",
+      "employeeCount": 28,
+      "annualRevenueInr": 48000000,
+      "foundedYear": 2015,
+      "productsOrServices": [
+        "Export compliance",
+        "International certifications",
+        "Market entry documentation"
+      ],
+      "currentMarkets": ["India"],
+      "targetMarkets": ["United Arab Emirates", "United Kingdom", "European Union"]
+    },
+    "goals": {
+      "primaryGoal": "Find export-oriented MSMEs and startups requiring compliance support",
+      "secondaryGoals": [
+        "Build referral partnerships",
+        "Expand international advisory network"
+      ],
+      "targetStakeholders": ["MSME", "STARTUP", "PARTNER"]
+    },
+    "aiResearch": {
+      "matchmaking": {
+        "enabled": true,
+        "desiredMatches": [
+          "Export-ready MSMEs",
+          "Internationally expanding startups"
+        ]
+      },
+      "investmentReadiness": {
+        "enabled": false
+      },
+      "leadGeneration": {
+        "enabled": true,
+        "targetCountries": ["India"],
+        "targetIndustries": ["Food Processing", "Manufacturing", "Consumer Goods"],
+        "targetTitles": ["Managing Director", "Export Director", "Operations Director"]
+      },
+      "eventsAndNews": {
+        "enabled": true,
+        "topics": ["Export regulation", "Trade compliance", "Market entry"],
+        "trackedMarkets": ["India", "United Arab Emirates", "United Kingdom"]
+      }
+    },
+    "metadata": {
+      "synthetic": true,
+      "source": "V-BRIDGE_AI_LAB",
+      "version": "1.0"
+    }
+  }
+]

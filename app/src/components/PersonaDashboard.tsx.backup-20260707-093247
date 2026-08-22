@@ -1,0 +1,594 @@
+"use client";
+
+import { useMemo, useState } from "react";
+
+import type { VBridgePersona } from "@/types/persona";
+
+interface PersonaDashboardProps {
+  personas: VBridgePersona[];
+}
+
+const stakeholderLabels: Record<
+  VBridgePersona["stakeholderType"],
+  string
+> = {
+  BUSINESS_USER: "Business User",
+  MSME: "MSME",
+  STARTUP: "Startup",
+  INVESTOR: "Investor",
+  PARTNER: "Partner",
+  MENTOR: "Mentor",
+  SERVICE_PROVIDER: "Service Provider",
+};
+
+const featureCards = [
+  {
+    key: "matchmaking",
+    number: "01",
+    title: "AI Matchmaking",
+    shortTitle: "Matchmaking",
+    description:
+      "Discover strategic partners, stakeholders and high-value business matches.",
+    icon: "✦",
+    accent: "blue",
+  },
+  {
+    key: "investmentReadiness",
+    number: "02",
+    title: "AI Investment Readiness",
+    shortTitle: "Investment",
+    description:
+      "Assess funding preparedness, traction signals and investor alignment.",
+    icon: "◆",
+    accent: "violet",
+  },
+  {
+    key: "leadGeneration",
+    number: "03",
+    title: "AI Lead Generation",
+    shortTitle: "Lead Generation",
+    description:
+      "Research targeted organizations and decision-makers through Apollo.io.",
+    icon: "◎",
+    accent: "cyan",
+  },
+  {
+    key: "eventsAndNews",
+    number: "04",
+    title: "AI Events & News",
+    shortTitle: "Events & News",
+    description:
+      "Surface relevant market news, events and opportunity signals.",
+    icon: "◈",
+    accent: "sky",
+  },
+] as const;
+
+const navigationItems = [
+  { label: "Overview", icon: "⌂", active: true },
+  { label: "AI Workflows", icon: "✦", active: false },
+  { label: "Research", icon: "⌕", active: false },
+  { label: "Opportunities", icon: "◇", active: false },
+  { label: "Activity", icon: "◷", active: false },
+];
+
+export default function PersonaDashboard({
+  personas,
+}: PersonaDashboardProps) {
+  const [selectedId, setSelectedId] = useState(
+    personas[0]?.id ?? "",
+  );
+
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const selectedPersona = useMemo(
+    () =>
+      personas.find((persona) => persona.id === selectedId) ??
+      personas[0],
+    [personas, selectedId],
+  );
+
+  if (!selectedPersona) {
+    return (
+      <main className="min-h-screen bg-[#061225] text-white">
+        <div className="mx-auto max-w-7xl px-6 py-20">
+          <h1 className="text-3xl font-semibold">
+            V-BRIDGE AI LAB
+          </h1>
+          <p className="mt-4 text-slate-400">
+            No synthetic personas are available.
+          </p>
+        </div>
+      </main>
+    );
+  }
+
+  const location = [
+    selectedPersona.profile.location.city,
+    selectedPersona.profile.location.stateOrRegion,
+    selectedPersona.profile.location.country,
+  ].join(", ");
+
+  const enabledWorkflowCount = featureCards.filter(
+    (feature) =>
+      selectedPersona.aiResearch[feature.key].enabled,
+  ).length;
+
+  return (
+    <main className="min-h-screen bg-[#061225] text-white">
+      <div className="pointer-events-none fixed inset-0 overflow-hidden">
+        <div className="absolute -left-40 -top-40 h-[520px] w-[520px] rounded-full bg-blue-600/10 blur-[120px]" />
+        <div className="absolute right-0 top-1/3 h-[460px] w-[460px] rounded-full bg-cyan-500/8 blur-[130px]" />
+      </div>
+
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[260px] border-r border-blue-300/10 bg-[#07162b]/95 backdrop-blur-xl xl:flex xl:flex-col">
+        <div className="flex h-[88px] items-center border-b border-white/8 px-6">
+          <div className="flex items-center gap-3">
+            <div className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-400 shadow-lg shadow-blue-500/20">
+              <span className="text-lg font-black text-white">
+                V
+              </span>
+              <div className="absolute inset-x-2 bottom-1 h-px bg-white/50" />
+            </div>
+
+            <div>
+              <p className="text-[15px] font-bold tracking-[0.04em] text-white">
+                V-BRIDGE
+              </p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-blue-300">
+                AI Lab
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <nav className="flex-1 px-4 py-7">
+          <p className="px-3 text-[10px] font-bold uppercase tracking-[0.22em] text-slate-600">
+            Workspace
+          </p>
+
+          <div className="mt-4 space-y-1.5">
+            {navigationItems.map((item) => (
+              <button
+                key={item.label}
+                type="button"
+                className={
+                  item.active
+                    ? "flex w-full items-center gap-3 rounded-xl border border-blue-400/20 bg-blue-500/12 px-3.5 py-3 text-left text-sm font-medium text-blue-100 shadow-inner shadow-blue-400/5"
+                    : "flex w-full items-center gap-3 rounded-xl border border-transparent px-3.5 py-3 text-left text-sm font-medium text-slate-400 transition hover:border-white/5 hover:bg-white/[0.035] hover:text-white"
+                }
+              >
+                <span
+                  className={
+                    item.active
+                      ? "flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/20 text-blue-300"
+                      : "flex h-8 w-8 items-center justify-center rounded-lg bg-white/[0.035] text-slate-500"
+                  }
+                >
+                  {item.icon}
+                </span>
+                {item.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="mt-9">
+            <p className="px-3 text-[10px] font-bold uppercase tracking-[0.22em] text-slate-600">
+              AI Capabilities
+            </p>
+
+            <div className="mt-4 space-y-1">
+              {featureCards.map((feature) => (
+                <div
+                  key={feature.key}
+                  className="flex items-center gap-3 px-3 py-2.5 text-xs text-slate-500"
+                >
+                  <span className="text-blue-400">
+                    {feature.icon}
+                  </span>
+                  <span>{feature.shortTitle}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </nav>
+
+        <div className="border-t border-white/8 p-5">
+          <div className="rounded-2xl border border-blue-400/10 bg-gradient-to-br from-blue-500/10 to-cyan-400/5 p-4">
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.7)]" />
+              <span className="text-xs font-semibold text-slate-300">
+                System Online
+              </span>
+            </div>
+            <p className="mt-2 text-[11px] leading-5 text-slate-500">
+              Research environment
+              <br />
+              V Strat Team
+            </p>
+          </div>
+        </div>
+      </aside>
+
+      <div className="relative xl:pl-[260px]">
+        <header className="sticky top-0 z-30 border-b border-white/8 bg-[#061225]/85 backdrop-blur-2xl">
+          <div className="flex min-h-[88px] items-center justify-between gap-5 px-5 sm:px-7 lg:px-10">
+            <div className="flex items-center gap-4">
+              <button
+                type="button"
+                onClick={() =>
+                  setMobileMenuOpen((value) => !value)
+                }
+                className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-lg text-slate-300 xl:hidden"
+                aria-label="Toggle navigation"
+              >
+                {mobileMenuOpen ? "×" : "☰"}
+              </button>
+
+              <div>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-base font-semibold tracking-tight text-white sm:text-lg">
+                    Intelligence Workspace
+                  </h1>
+                  <span className="hidden rounded-full border border-blue-400/20 bg-blue-500/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.16em] text-blue-300 sm:inline">
+                    Beta
+                  </span>
+                </div>
+                <p className="mt-1 hidden text-xs text-slate-500 sm:block">
+                  AI-powered opportunity research
+                </p>
+              </div>
+            </div>
+
+            <div className="min-w-0 flex-1 sm:max-w-[470px]">
+              <label
+                htmlFor="persona"
+                className="mb-1.5 hidden text-[9px] font-bold uppercase tracking-[0.2em] text-blue-300 sm:block"
+              >
+                Acting As
+              </label>
+
+              <div className="relative">
+                <select
+                  id="persona"
+                  value={selectedPersona.id}
+                  onChange={(event) =>
+                    setSelectedId(event.target.value)
+                  }
+                  className="w-full appearance-none rounded-xl border border-blue-300/15 bg-[#0b1d38] px-3 py-2.5 pr-9 text-xs font-medium text-blue-50 outline-none transition hover:border-blue-400/30 focus:border-blue-400 focus:ring-4 focus:ring-blue-500/10 sm:px-4 sm:text-sm"
+                >
+                  {personas.map((persona) => (
+                    <option
+                      key={persona.id}
+                      value={persona.id}
+                    >
+                      {stakeholderLabels[
+                        persona.stakeholderType
+                      ]}
+                      {" — "}
+                      {persona.profile.organizationName}
+                    </option>
+                  ))}
+                </select>
+
+                <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-blue-300">
+                  ▼
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {mobileMenuOpen && (
+            <div className="border-t border-white/8 bg-[#07162b] px-5 py-4 xl:hidden">
+              <div className="grid gap-2 sm:grid-cols-2">
+                {navigationItems.map((item) => (
+                  <button
+                    key={item.label}
+                    type="button"
+                    className={
+                      item.active
+                        ? "flex items-center gap-3 rounded-xl bg-blue-500/12 px-4 py-3 text-left text-sm text-blue-200"
+                        : "flex items-center gap-3 rounded-xl bg-white/[0.025] px-4 py-3 text-left text-sm text-slate-400"
+                    }
+                  >
+                    <span>{item.icon}</span>
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </header>
+
+        <div className="mx-auto max-w-[1540px] px-5 py-7 sm:px-7 lg:px-10 lg:py-10">
+          <section className="relative overflow-hidden rounded-[28px] border border-blue-300/12 bg-gradient-to-br from-[#0b2a57] via-[#0a2144] to-[#08182f] shadow-2xl shadow-black/20">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_85%_15%,rgba(56,189,248,0.16),transparent_32%)]" />
+            <div className="absolute -right-16 -top-24 h-72 w-72 rounded-full border border-blue-300/10" />
+            <div className="absolute -right-4 -top-12 h-56 w-56 rounded-full border border-cyan-300/10" />
+
+            <div className="relative grid gap-8 p-6 sm:p-8 lg:grid-cols-[1.45fr_0.75fr] lg:p-10">
+              <div>
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <span className="rounded-full border border-blue-300/20 bg-blue-400/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-blue-200">
+                    {stakeholderLabels[
+                      selectedPersona.stakeholderType
+                    ]}
+                  </span>
+
+                  <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[10px] font-semibold tracking-[0.08em] text-slate-300">
+                    {selectedPersona.id}
+                  </span>
+
+                  <span className="flex items-center gap-1.5 rounded-full border border-emerald-300/15 bg-emerald-400/8 px-3 py-1.5 text-[10px] font-semibold text-emerald-300">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                    Active Persona
+                  </span>
+                </div>
+
+                <p className="mt-7 text-xs font-semibold uppercase tracking-[0.2em] text-blue-300">
+                  Current Organization
+                </p>
+
+                <h2 className="mt-3 max-w-4xl text-3xl font-bold tracking-[-0.03em] text-white sm:text-4xl lg:text-[44px] lg:leading-[1.08]">
+                  {selectedPersona.profile.organizationName}
+                </h2>
+
+                <p className="mt-4 text-sm text-blue-100/70 sm:text-base">
+                  {selectedPersona.profile.industry}
+                  <span className="mx-2 text-blue-400">
+                    /
+                  </span>
+                  {selectedPersona.profile.subIndustry}
+                </p>
+
+                <div className="mt-3 flex items-center gap-2 text-sm text-slate-400">
+                  <span className="text-blue-400">●</span>
+                  {location}
+                </div>
+
+                <div className="mt-8 max-w-3xl rounded-2xl border border-blue-200/10 bg-black/15 p-5 backdrop-blur-sm">
+                  <div className="flex items-start gap-3">
+                    <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-500/15 text-blue-300">
+                      ↗
+                    </div>
+
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-blue-300">
+                        Primary Growth Objective
+                      </p>
+                      <p className="mt-2 text-base leading-7 text-blue-50">
+                        {selectedPersona.goals.primaryGoal}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid content-center gap-3 sm:grid-cols-3 lg:grid-cols-1">
+                <div className="rounded-2xl border border-white/10 bg-white/[0.055] p-5 backdrop-blur-md">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-blue-300">
+                    Business Stage
+                  </p>
+                  <p className="mt-2 text-xl font-bold text-white">
+                    {selectedPersona.business.stage}
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-white/10 bg-white/[0.055] p-5 backdrop-blur-md">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-blue-300">
+                    Team Size
+                  </p>
+                  <p className="mt-2 text-xl font-bold text-white">
+                    {selectedPersona.business.employeeCount}
+                    <span className="ml-1.5 text-xs font-medium text-slate-400">
+                      employees
+                    </span>
+                  </p>
+                </div>
+
+                <div className="rounded-2xl border border-white/10 bg-white/[0.055] p-5 backdrop-blur-md">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-blue-300">
+                    AI Workflows
+                  </p>
+                  <p className="mt-2 text-xl font-bold text-white">
+                    {enabledWorkflowCount}
+                    <span className="ml-1.5 text-xs font-medium text-slate-400">
+                      enabled
+                    </span>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className="mt-9">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-blue-400">
+                  AI Research Suite
+                </p>
+                <h3 className="mt-2 text-2xl font-bold tracking-tight text-white">
+                  Intelligence capabilities
+                </h3>
+                <p className="mt-2 text-sm text-slate-500">
+                  Persona-aware workflows for global opportunity discovery
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 rounded-xl border border-white/8 bg-white/[0.025] px-3 py-2">
+                <span className="h-2 w-2 rounded-full bg-blue-400 shadow-[0_0_10px_rgba(96,165,250,0.7)]" />
+                <span className="text-[11px] font-medium text-slate-400">
+                  Apollo.io integration foundation
+                </span>
+              </div>
+            </div>
+
+            <div className="mt-6 grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
+              {featureCards.map((feature) => {
+                const workflow =
+                  selectedPersona.aiResearch[feature.key];
+
+                return (
+                  <article
+                    key={feature.key}
+                    className="group relative overflow-hidden rounded-2xl border border-white/8 bg-[#0a1a32] p-5 transition duration-300 hover:-translate-y-1 hover:border-blue-400/25 hover:bg-[#0b1f3d] hover:shadow-xl hover:shadow-blue-950/30"
+                  >
+                    <div className="absolute right-0 top-0 h-24 w-24 bg-gradient-to-bl from-blue-500/8 to-transparent" />
+
+                    <div className="relative flex items-start justify-between">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-blue-300/10 bg-blue-500/10 text-lg text-blue-300 transition group-hover:border-blue-300/20 group-hover:bg-blue-500/15">
+                        {feature.icon}
+                      </div>
+
+                      <span
+                        className={
+                          workflow.enabled
+                            ? "flex items-center gap-1.5 rounded-full border border-emerald-300/10 bg-emerald-400/8 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.1em] text-emerald-300"
+                            : "rounded-full border border-slate-500/10 bg-slate-500/8 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.1em] text-slate-500"
+                        }
+                      >
+                        {workflow.enabled && (
+                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                        )}
+                        {workflow.enabled
+                          ? "Ready"
+                          : "N/A"}
+                      </span>
+                    </div>
+
+                    <div className="relative mt-6">
+                      <p className="text-[10px] font-bold tracking-[0.18em] text-blue-500">
+                        {feature.number}
+                      </p>
+                      <h4 className="mt-2 text-base font-bold text-white">
+                        {feature.title}
+                      </h4>
+                      <p className="mt-3 min-h-[66px] text-[13px] leading-[1.7] text-slate-500">
+                        {feature.description}
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      disabled={!workflow.enabled}
+                      className="relative mt-5 flex w-full items-center justify-between rounded-xl border border-blue-300/10 bg-blue-500/8 px-4 py-3 text-xs font-semibold text-blue-200 transition enabled:hover:border-blue-300/25 enabled:hover:bg-blue-500/15 disabled:cursor-not-allowed disabled:border-white/5 disabled:bg-white/[0.02] disabled:text-slate-600"
+                    >
+                      <span>
+                        {workflow.enabled
+                          ? "Open Research"
+                          : "Unavailable"}
+                      </span>
+                      <span>
+                        {workflow.enabled ? "→" : "—"}
+                      </span>
+                    </button>
+                  </article>
+                );
+              })}
+            </div>
+          </section>
+
+          <section className="mt-9 grid gap-5 lg:grid-cols-[1fr_1fr_0.8fr]">
+            <article className="rounded-2xl border border-white/8 bg-[#0a1a32] p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-blue-400">
+                    Market Focus
+                  </p>
+                  <h4 className="mt-2 text-lg font-bold text-white">
+                    Target markets
+                  </h4>
+                </div>
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10 text-blue-300">
+                  ◎
+                </div>
+              </div>
+
+              <div className="mt-6 flex flex-wrap gap-2">
+                {selectedPersona.business.targetMarkets.map(
+                  (market) => (
+                    <span
+                      key={market}
+                      className="rounded-xl border border-blue-300/10 bg-blue-500/8 px-3 py-2 text-xs font-medium text-blue-200"
+                    >
+                      {market}
+                    </span>
+                  ),
+                )}
+              </div>
+            </article>
+
+            <article className="rounded-2xl border border-white/8 bg-[#0a1a32] p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-cyan-400">
+                    Portfolio
+                  </p>
+                  <h4 className="mt-2 text-lg font-bold text-white">
+                    Products & services
+                  </h4>
+                </div>
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-500/10 text-cyan-300">
+                  ◇
+                </div>
+              </div>
+
+              <ul className="mt-5 space-y-3">
+                {selectedPersona.business.productsOrServices.map(
+                  (item) => (
+                    <li
+                      key={item}
+                      className="flex items-start gap-3 text-[13px] leading-6 text-slate-400"
+                    >
+                      <span className="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.5)]" />
+                      <span>{item}</span>
+                    </li>
+                  ),
+                )}
+              </ul>
+            </article>
+
+            <article className="rounded-2xl border border-white/8 bg-[#0a1a32] p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-violet-400">
+                    Strategy
+                  </p>
+                  <h4 className="mt-2 text-lg font-bold text-white">
+                    Objectives
+                  </h4>
+                </div>
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-500/10 text-violet-300">
+                  ↗
+                </div>
+              </div>
+
+              <ul className="mt-5 space-y-3">
+                {selectedPersona.goals.secondaryGoals.map(
+                  (goal) => (
+                    <li
+                      key={goal}
+                      className="flex items-start gap-3 text-[13px] leading-6 text-slate-400"
+                    >
+                      <span className="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-violet-400" />
+                      <span>{goal}</span>
+                    </li>
+                  ),
+                )}
+              </ul>
+            </article>
+          </section>
+
+          <footer className="mt-10 flex flex-col gap-3 border-t border-white/8 py-6 text-[11px] text-slate-600 sm:flex-row sm:items-center sm:justify-between">
+            <p>
+              V-BRIDGE AI LAB · V Strat Team
+            </p>
+            <p>
+              Synthetic research environment · Version 1.0
+            </p>
+          </footer>
+        </div>
+      </div>
+    </main>
+  );
+}

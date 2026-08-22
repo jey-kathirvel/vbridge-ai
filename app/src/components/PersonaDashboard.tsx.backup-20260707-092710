@@ -1,0 +1,346 @@
+"use client";
+
+import { useMemo, useState } from "react";
+
+import type { VBridgePersona } from "@/types/persona";
+
+interface PersonaDashboardProps {
+  personas: VBridgePersona[];
+}
+
+const stakeholderLabels: Record<
+  VBridgePersona["stakeholderType"],
+  string
+> = {
+  BUSINESS_USER: "Business User",
+  MSME: "MSME",
+  STARTUP: "Startup",
+  INVESTOR: "Investor",
+  PARTNER: "Partner",
+  MENTOR: "Mentor",
+  SERVICE_PROVIDER: "Service Provider",
+};
+
+const featureCards = [
+  {
+    key: "matchmaking",
+    number: "01",
+    title: "AI Matchmaking",
+    description:
+      "Discover and rank strategic business, partner and stakeholder matches.",
+  },
+  {
+    key: "investmentReadiness",
+    number: "02",
+    title: "AI Investment Readiness",
+    description:
+      "Assess funding preparedness and research relevant market context.",
+  },
+  {
+    key: "leadGeneration",
+    number: "03",
+    title: "AI Lead Generation",
+    description:
+      "Research targeted organizations and decision-makers through Apollo.io.",
+  },
+  {
+    key: "eventsAndNews",
+    number: "04",
+    title: "AI Events & News",
+    description:
+      "Surface relevant news and opportunity signals for the active persona.",
+  },
+] as const;
+
+export default function PersonaDashboard({
+  personas,
+}: PersonaDashboardProps) {
+  const [selectedId, setSelectedId] = useState(
+    personas[0]?.id ?? "",
+  );
+
+  const selectedPersona = useMemo(
+    () =>
+      personas.find((persona) => persona.id === selectedId) ??
+      personas[0],
+    [personas, selectedId],
+  );
+
+  if (!selectedPersona) {
+    return (
+      <main className="min-h-screen bg-slate-950 text-white">
+        <div className="mx-auto max-w-7xl px-6 py-20">
+          <h1 className="text-3xl font-semibold">
+            V-BRIDGE AI LAB
+          </h1>
+          <p className="mt-4 text-slate-400">
+            No synthetic personas are available.
+          </p>
+        </div>
+      </main>
+    );
+  }
+
+  const location = [
+    selectedPersona.profile.location.city,
+    selectedPersona.profile.location.stateOrRegion,
+    selectedPersona.profile.location.country,
+  ].join(", ");
+
+  return (
+    <main className="min-h-screen bg-slate-950 text-white">
+      <header className="border-b border-white/10 bg-slate-950/95">
+        <div className="mx-auto flex max-w-7xl flex-col gap-5 px-6 py-6 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-teal-400 font-black text-slate-950">
+                V
+              </div>
+
+              <div>
+                <h1 className="text-xl font-semibold tracking-tight">
+                  V-BRIDGE AI LAB
+                </h1>
+                <p className="text-sm text-slate-400">
+                  V Strat Team
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="w-full lg:w-[430px]">
+            <label
+              htmlFor="persona"
+              className="mb-2 block text-xs font-semibold uppercase tracking-[0.18em] text-teal-300"
+            >
+              Acting As
+            </label>
+
+            <select
+              id="persona"
+              value={selectedPersona.id}
+              onChange={(event) =>
+                setSelectedId(event.target.value)
+              }
+              className="w-full rounded-2xl border border-white/10 bg-slate-900 px-4 py-3 text-sm text-white outline-none transition focus:border-teal-400"
+            >
+              {personas.map((persona) => (
+                <option
+                  key={persona.id}
+                  value={persona.id}
+                >
+                  {stakeholderLabels[persona.stakeholderType]}
+                  {" — "}
+                  {persona.profile.organizationName}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </header>
+
+      <section className="mx-auto max-w-7xl px-6 py-10">
+        <div className="grid gap-6 lg:grid-cols-[1.55fr_0.85fr]">
+          <article className="overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-slate-900 via-slate-900 to-teal-950 p-7 shadow-2xl shadow-black/20">
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="rounded-full border border-teal-300/20 bg-teal-300/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-teal-300">
+                {stakeholderLabels[selectedPersona.stakeholderType]}
+              </span>
+
+              <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-300">
+                {selectedPersona.id}
+              </span>
+            </div>
+
+            <h2 className="mt-6 max-w-3xl text-3xl font-semibold tracking-tight sm:text-4xl">
+              {selectedPersona.profile.organizationName}
+            </h2>
+
+            <p className="mt-3 text-base text-slate-300">
+              {selectedPersona.profile.industry}
+              {" · "}
+              {selectedPersona.profile.subIndustry}
+            </p>
+
+            <p className="mt-2 text-sm text-slate-400">
+              {location}
+            </p>
+
+            <div className="mt-8 rounded-2xl border border-white/10 bg-black/20 p-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                Primary Goal
+              </p>
+
+              <p className="mt-2 text-lg leading-7 text-white">
+                {selectedPersona.goals.primaryGoal}
+              </p>
+            </div>
+          </article>
+
+          <aside className="rounded-3xl border border-white/10 bg-slate-900 p-7">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-300">
+              Persona Snapshot
+            </p>
+
+            <dl className="mt-6 space-y-5">
+              <div>
+                <dt className="text-sm text-slate-500">
+                  Profile Owner
+                </dt>
+                <dd className="mt-1 font-medium text-white">
+                  {selectedPersona.profile.displayName}
+                </dd>
+              </div>
+
+              <div>
+                <dt className="text-sm text-slate-500">
+                  Business Stage
+                </dt>
+                <dd className="mt-1 font-medium text-white">
+                  {selectedPersona.business.stage}
+                </dd>
+              </div>
+
+              <div>
+                <dt className="text-sm text-slate-500">
+                  Employees
+                </dt>
+                <dd className="mt-1 font-medium text-white">
+                  {selectedPersona.business.employeeCount}
+                </dd>
+              </div>
+
+              <div>
+                <dt className="text-sm text-slate-500">
+                  Target Markets
+                </dt>
+                <dd className="mt-2 flex flex-wrap gap-2">
+                  {selectedPersona.business.targetMarkets.map(
+                    (market) => (
+                      <span
+                        key={market}
+                        className="rounded-lg bg-white/5 px-2.5 py-1 text-xs text-slate-300"
+                      >
+                        {market}
+                      </span>
+                    ),
+                  )}
+                </dd>
+              </div>
+            </dl>
+          </aside>
+        </div>
+
+        <div className="mt-10">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-300">
+                Research Workflows
+              </p>
+
+              <h3 className="mt-2 text-2xl font-semibold tracking-tight">
+                Four AI capabilities
+              </h3>
+            </div>
+
+            <p className="text-sm text-slate-500">
+              Apollo.io integration foundation
+            </p>
+          </div>
+
+          <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+            {featureCards.map((feature) => {
+              const workflow =
+                selectedPersona.aiResearch[feature.key];
+
+              return (
+                <article
+                  key={feature.key}
+                  className="group rounded-3xl border border-white/10 bg-slate-900 p-6 transition hover:-translate-y-1 hover:border-teal-300/30"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-bold text-teal-300">
+                      {feature.number}
+                    </span>
+
+                    <span
+                      className={
+                        workflow.enabled
+                          ? "rounded-full bg-emerald-400/10 px-2.5 py-1 text-xs font-medium text-emerald-300"
+                          : "rounded-full bg-slate-700/50 px-2.5 py-1 text-xs font-medium text-slate-400"
+                      }
+                    >
+                      {workflow.enabled
+                        ? "Enabled"
+                        : "Not applicable"}
+                    </span>
+                  </div>
+
+                  <h4 className="mt-7 text-lg font-semibold">
+                    {feature.title}
+                  </h4>
+
+                  <p className="mt-3 text-sm leading-6 text-slate-400">
+                    {feature.description}
+                  </p>
+
+                  <button
+                    type="button"
+                    disabled={!workflow.enabled}
+                    className="mt-6 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium text-white transition enabled:hover:border-teal-300/30 enabled:hover:bg-teal-300/10 disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    {workflow.enabled
+                      ? "Open Research"
+                      : "Unavailable"}
+                  </button>
+                </article>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="mt-10 grid gap-6 lg:grid-cols-2">
+          <article className="rounded-3xl border border-white/10 bg-slate-900 p-7">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-300">
+              Products & Services
+            </p>
+
+            <ul className="mt-5 space-y-3">
+              {selectedPersona.business.productsOrServices.map(
+                (item) => (
+                  <li
+                    key={item}
+                    className="flex items-start gap-3 text-sm text-slate-300"
+                  >
+                    <span className="mt-2 h-1.5 w-1.5 rounded-full bg-teal-300" />
+                    <span>{item}</span>
+                  </li>
+                ),
+              )}
+            </ul>
+          </article>
+
+          <article className="rounded-3xl border border-white/10 bg-slate-900 p-7">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-300">
+              Strategic Objectives
+            </p>
+
+            <ul className="mt-5 space-y-3">
+              {selectedPersona.goals.secondaryGoals.map(
+                (goal) => (
+                  <li
+                    key={goal}
+                    className="flex items-start gap-3 text-sm text-slate-300"
+                  >
+                    <span className="mt-2 h-1.5 w-1.5 rounded-full bg-blue-400" />
+                    <span>{goal}</span>
+                  </li>
+                ),
+              )}
+            </ul>
+          </article>
+        </div>
+      </section>
+    </main>
+  );
+}
