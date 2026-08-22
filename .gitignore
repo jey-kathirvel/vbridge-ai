@@ -78,3 +78,7 @@ build/
 # Local configuration
 config.local.*
 settings.local.*
+
+# Development step backups
+.step-backups/
+app/.step-backups/
