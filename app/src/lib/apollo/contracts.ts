@@ -5,6 +5,14 @@ export type ApolloHttpMethod =
   | "PATCH"
   | "DELETE";
 
+export type ApolloQueryValue =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | Array<string | number | boolean>;
+
 export type ApolloIntegrationErrorCode =
   | "APOLLO_DISABLED"
   | "APOLLO_NOT_CONFIGURED"
@@ -20,10 +28,7 @@ export type ApolloIntegrationErrorCode =
 
 export interface ApolloRequestOptions {
   method?: ApolloHttpMethod;
-  query?: Record<
-    string,
-    string | number | boolean | null | undefined
-  >;
+  query?: Record<string, ApolloQueryValue>;
   body?: unknown;
   headers?: Record<string, string>;
   timeoutMs?: number;
