@@ -26,6 +26,10 @@ type OperationDefinition = {
   description: string;
   verifiedFreePlan: boolean;
   help: string;
+  browserEndpoint?: string;
+  browserMethod?: "GET" | "POST";
+  apolloEndpoint: string;
+  apolloMethod: "GET" | "POST";
 };
 
 const defaults: Record<Operation, Partial<FormState>> = {
@@ -43,60 +47,76 @@ const operations: OperationDefinition[] = [
     title: "Saved Contacts",
     subtitle: "Search workspace contacts",
     description:
-      "Search contacts already stored in this Apollo workspace. This is a verified Free-plan endpoint and does not search Apollo's global people database.",
+      "Search contacts already stored in this Apollo workspace. This verified Free-plan endpoint does not search Apollo's global people database.",
     verifiedFreePlan: true,
     help:
-      "Use this when V-Bridge needs to retrieve contacts previously created or saved in Apollo. Empty fields in Apollo records are displayed as dashes rather than treated as errors.",
+      "Use this when V-Bridge needs contacts previously created or saved in Apollo. Leave the keyword blank to return the first page.",
+    browserEndpoint: "/api/apollo/free/contacts/search",
+    browserMethod: "POST",
+    apolloEndpoint: "/api/v1/contacts/search",
+    apolloMethod: "POST",
   },
   {
     id: "accounts-search",
     title: "Saved Accounts",
     subtitle: "Search saved companies",
-    description:
-      "Search companies already stored as accounts in the configured Apollo workspace.",
+    description: "Search companies already stored as accounts in this Apollo workspace.",
     verifiedFreePlan: true,
     help:
-      "This endpoint searches your own Apollo workspace only. It is different from Apollo's global Company Search, which is not included in the current Free plan.",
+      "This searches your own Apollo workspace only. It is different from Apollo global Company Search, which is not included in the Free plan.",
+    browserEndpoint: "/api/apollo/free/accounts/search",
+    browserMethod: "POST",
+    apolloEndpoint: "/api/v1/accounts/search",
+    apolloMethod: "POST",
   },
   {
     id: "users",
     title: "Apollo Users",
     subtitle: "Workspace users",
-    description:
-      "Retrieve Apollo users associated with the configured workspace and master key.",
+    description: "Retrieve users associated with the configured Apollo workspace.",
     verifiedFreePlan: true,
     help:
-      "Useful for administration and integration diagnostics. It does not discover external prospects or consume enrichment credits.",
+      "Useful for administration and integration diagnostics. It does not discover external prospects.",
+    browserEndpoint: "/api/apollo/free/users/search",
+    browserMethod: "GET",
+    apolloEndpoint: "/api/v1/users/search",
+    apolloMethod: "GET",
   },
   {
     id: "api-usage",
     title: "API Usage",
     subtitle: "Usage and rate-limit visibility",
-    description:
-      "Request the current Apollo API usage statistics available to this workspace.",
+    description: "Request current Apollo API usage statistics available to this workspace.",
     verifiedFreePlan: true,
-    help:
-      "Use this screen to understand API consumption and protect V-Bridge from unexpectedly reaching Apollo request limits.",
+    help: "Use this to understand API consumption and watch Apollo request limits.",
+    browserEndpoint: "/api/apollo/free/usage/api",
+    browserMethod: "POST",
+    apolloEndpoint: "/api/v1/usage_stats/api_usage_stats",
+    apolloMethod: "POST",
   },
   {
     id: "credit-usage",
     title: "Credit Usage",
     subtitle: "Credit safety",
-    description:
-      "View Apollo credit usage information reported for the current workspace.",
+    description: "View Apollo credit usage information reported for the current workspace.",
     verifiedFreePlan: true,
     help:
-      "This endpoint helps V-Bridge monitor credit consumption before any future paid enrichment capabilities are enabled.",
+      "Use this before enabling future paid capabilities so V-Bridge users can understand credit consumption.",
+    browserEndpoint: "/api/apollo/free/usage/credits",
+    browserMethod: "POST",
+    apolloEndpoint: "/api/v1/usage_stats/credit_usage_stats",
+    apolloMethod: "POST",
   },
   {
     id: "people-search",
     title: "People Search",
     subtitle: "Global prospect search",
-    description:
-      "Apollo's global People Search is not included in the currently verified Free plan, even though the endpoint can be described separately from enrichment credit usage.",
+    description: "Apollo global People Search is not included in the currently verified Free plan.",
     verifiedFreePlan: false,
     help:
-      "Your Apollo account returned HTTP 403 API_INACCESSIBLE for /api/v1/mixed_people/api_search. V-Bridge therefore blocks this operation locally and does not call Apollo.",
+      "Your Apollo account returned HTTP 403 API_INACCESSIBLE for this endpoint, so V-Bridge blocks it locally.",
+    apolloEndpoint: "/api/v1/mixed_people/api_search",
+    apolloMethod: "POST",
   },
 ];
 
@@ -112,9 +132,7 @@ function asArray(value: unknown): unknown[] {
 
 function display(value: unknown): string {
   if (value === null || value === undefined || value === "") return "—";
-  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
-    return String(value);
-  }
+  if (["string", "number", "boolean"].includes(typeof value)) return String(value);
   return "—";
 }
 
@@ -135,13 +153,14 @@ function Field({
     <label className="block">
       <span className="flex items-center gap-2 text-sm font-bold text-slate-800">
         {label}
-        <span
+        <button
+          type="button"
           title={help}
           aria-label={`${label} help: ${help}`}
           className="inline-flex h-5 w-5 cursor-help items-center justify-center rounded-full bg-blue-100 text-[11px] font-black text-blue-700"
         >
           ?
-        </span>
+        </button>
       </span>
       <input
         type={type}
@@ -152,6 +171,19 @@ function Field({
       <span className="mt-2 block text-xs leading-5 text-slate-500">{help}</span>
     </label>
   );
+}
+
+function Metric({ label, value }: { label: string; value: string | number }) {
+  return (
+    <div className="rounded-2xl border border-blue-100 bg-blue-50 p-4">
+      <p className="text-[10px] font-black uppercase tracking-[0.15em] text-blue-500">{label}</p>
+      <p className="mt-2 text-xl font-extrabold text-[#12315b]">{value}</p>
+    </div>
+  );
+}
+
+function EmptyState({ text }: { text: string }) {
+  return <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 text-sm leading-6 text-slate-600">{text}</div>;
 }
 
 function ContactResults({ response }: { response: unknown }) {
@@ -174,7 +206,7 @@ function ContactResults({ response }: { response: unknown }) {
           <table className="min-w-full divide-y divide-slate-200 text-left text-xs">
             <thead className="bg-slate-50 text-slate-600">
               <tr>
-                {['Name','Title','Organization','Email','Phones','Source','Created'].map((item) => (
+                {["Name", "Title", "Organization", "Email", "Phones", "Source", "Created"].map((item) => (
                   <th key={item} className="px-4 py-3 font-extrabold">{item}</th>
                 ))}
               </tr>
@@ -213,7 +245,7 @@ function AccountResults({ response }: { response: unknown }) {
         <Metric label="Page" value={display(pagination?.page)} />
       </div>
       {accounts.length === 0 ? (
-        <EmptyState text="No saved accounts matched this search. Add or save accounts in Apollo to see them here." />
+        <EmptyState text="No saved accounts matched this search." />
       ) : (
         <div className="grid gap-3 md:grid-cols-2">
           {accounts.map((account, index) => (
@@ -256,19 +288,6 @@ function GenericResults({ response, operation }: { response: unknown; operation:
   );
 }
 
-function Metric({ label, value }: { label: string; value: string | number }) {
-  return (
-    <div className="rounded-2xl border border-blue-100 bg-blue-50 p-4">
-      <p className="text-[10px] font-black uppercase tracking-[0.15em] text-blue-500">{label}</p>
-      <p className="mt-2 text-xl font-extrabold text-[#12315b]">{value}</p>
-    </div>
-  );
-}
-
-function EmptyState({ text }: { text: string }) {
-  return <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 text-sm leading-6 text-slate-600">{text}</div>;
-}
-
 export default function ApolloFreeLab() {
   const [operation, setOperation] = useState<Operation>("contacts-search");
   const [form, setForm] = useState<FormState>({
@@ -306,25 +325,35 @@ export default function ApolloFreeLab() {
 
   async function run(event: FormEvent) {
     event.preventDefault();
-    if (!active.verifiedFreePlan) return;
+    if (!active.verifiedFreePlan || !active.browserEndpoint || !active.browserMethod) return;
 
     setLoading(true);
     setResponse(null);
     setHttpStatus(null);
 
     try {
-      const result = await fetch("/api/apollo/free", {
-        method: "POST",
+      let url = active.browserEndpoint;
+      const options: RequestInit = {
+        method: active.browserMethod,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          operation,
-          payload: {
-            ...form,
-            page: Number(form.page || 1),
-            perPage: Number(form.perPage || 10),
-          },
-        }),
-      });
+      };
+
+      if (active.browserMethod === "GET") {
+        const params = new URLSearchParams({
+          page: String(Number(form.page || 1)),
+          per_page: String(Number(form.perPage || 10)),
+        });
+        url = `${url}?${params.toString()}`;
+      } else {
+        options.body = JSON.stringify({
+          keywords: form.keywords,
+          organizationName: form.organizationName,
+          page: Number(form.page || 1),
+          perPage: Number(form.perPage || 10),
+        });
+      }
+
+      const result = await fetch(url, options);
       setHttpStatus(result.status);
       setResponse(await result.json());
     } catch {
@@ -349,21 +378,21 @@ export default function ApolloFreeLab() {
               </div>
               <h1 className="mt-4 text-3xl font-extrabold sm:text-4xl">Apollo.io Free API Samples</h1>
               <p className="mt-3 max-w-3xl text-sm leading-7 text-blue-100 sm:text-base">
-                These screens reflect APIs verified directly against the Apollo Free plan configured for V-Bridge. The API key stays server-side.
+                Each action now uses its own V-Bridge API URL so users can identify the API call directly in Chrome Network. Apollo credentials remain server-side.
               </p>
             </div>
             <div className="rounded-2xl border border-white/15 bg-white/10 p-4">
-              <p className="text-xs font-bold uppercase tracking-[0.15em] text-blue-100">Current safety mode</p>
-              <p className="mt-1 text-lg font-extrabold">Read-only verified APIs</p>
-              <p className="mt-1 text-xs text-blue-100">No enrichment · No email reveal · No phone reveal</p>
+              <p className="text-xs font-bold uppercase tracking-[0.15em] text-blue-100">Network visibility</p>
+              <p className="mt-1 text-lg font-extrabold">Operation-specific API routes</p>
+              <p className="mt-1 text-xs text-blue-100">Upstream endpoint is also returned in safe response headers</p>
             </div>
           </div>
         </header>
 
         <section className="mt-6 rounded-[22px] border border-amber-200 bg-amber-50 p-5">
-          <h2 className="text-sm font-extrabold text-amber-950">What the test fields mean</h2>
+          <h2 className="text-sm font-extrabold text-amber-950">How to verify in Chrome Network</h2>
           <p className="mt-2 text-sm leading-6 text-amber-900">
-            Saved Contacts and Saved Accounts query records already present in your Apollo workspace. They do not discover new people or companies. Leave a keyword blank to request the first page of saved records. Every field includes a ? tooltip and inline help.
+            Open DevTools → Network → Fetch/XHR, then click Run. You will see a readable V-Bridge URL such as /api/apollo/free/contacts/search. Open that request and inspect Response Headers for X-VBridge-Apollo-Upstream to see the exact Apollo endpoint called by the server.
           </p>
         </section>
 
@@ -404,6 +433,22 @@ export default function ApolloFreeLab() {
                   {active.verifiedFreePlan ? "HTTP 200 verified on Free plan" : "Not included in Free plan"}
                 </span>
               </div>
+
+              <div className="mt-4 grid gap-3 md:grid-cols-2">
+                <div className="rounded-xl border border-blue-100 bg-blue-50 p-4">
+                  <p className="text-[10px] font-black uppercase tracking-[0.14em] text-blue-500">Network tab request</p>
+                  <code className="mt-2 block break-all text-xs font-bold text-blue-950">
+                    {active.browserEndpoint ? `${active.browserMethod} ${active.browserEndpoint}` : "Blocked locally"}
+                  </code>
+                </div>
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                  <p className="text-[10px] font-black uppercase tracking-[0.14em] text-slate-500">Apollo upstream</p>
+                  <code className="mt-2 block break-all text-xs font-bold text-slate-800">
+                    {active.apolloMethod} {active.apolloEndpoint}
+                  </code>
+                </div>
+              </div>
+
               <div className={`mt-4 rounded-xl p-4 text-xs leading-5 ${active.verifiedFreePlan ? "bg-blue-50 text-blue-900" : "bg-amber-50 text-amber-900"}`}>
                 <strong>Help:</strong> {active.help}
               </div>
@@ -412,23 +457,21 @@ export default function ApolloFreeLab() {
             {!active.verifiedFreePlan ? (
               <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-6">
                 <p className="text-base font-extrabold text-amber-950">This request is intentionally disabled.</p>
-                <p className="mt-2 text-sm leading-6 text-amber-900">
-                  Apollo returned API_INACCESSIBLE for this endpoint on the Free plan. V-Bridge blocks it locally so users do not waste requests or misunderstand plan availability.
-                </p>
+                <p className="mt-2 text-sm leading-6 text-amber-900">Apollo returned API_INACCESSIBLE on the Free plan, so V-Bridge does not call it.</p>
               </div>
             ) : (
               <form onSubmit={run} className="mt-6">
                 {operation === "contacts-search" && (
                   <div className="grid gap-5 md:grid-cols-2">
-                    <Field label="Contact keywords" value={form.keywords} onChange={(value) => setField("keywords", value)} help="Optional. Search contacts already saved in this Apollo workspace. Leave blank to return the first page of saved contacts." />
-                    <Field label="Results per page" type="number" value={form.perPage} onChange={(value) => setField("perPage", value)} help="How many saved contacts Apollo should return on this page. Use 10 while testing; V-Bridge caps the value at 100." />
+                    <Field label="Contact keywords" value={form.keywords} onChange={(value) => setField("keywords", value)} help="Optional. Search contacts already saved in this Apollo workspace. Leave blank to return the first page." />
+                    <Field label="Results per page" type="number" value={form.perPage} onChange={(value) => setField("perPage", value)} help="How many saved contacts Apollo should return on this page. Use 10 while testing." />
                   </div>
                 )}
 
                 {operation === "accounts-search" && (
                   <div className="grid gap-5 md:grid-cols-2">
-                    <Field label="Company / account name" value={form.organizationName} onChange={(value) => setField("organizationName", value)} help="Optional. Enter part of a company name to filter accounts already saved in Apollo. Leave blank to request the first page." />
-                    <Field label="Results per page" type="number" value={form.perPage} onChange={(value) => setField("perPage", value)} help="How many saved Apollo accounts should be returned. Use 10 for test calls." />
+                    <Field label="Company / account name" value={form.organizationName} onChange={(value) => setField("organizationName", value)} help="Optional. Enter part of a company name to filter accounts already saved in Apollo." />
+                    <Field label="Results per page" type="number" value={form.perPage} onChange={(value) => setField("perPage", value)} help="How many saved accounts Apollo should return. Use 10 for testing." />
                   </div>
                 )}
 
@@ -441,7 +484,7 @@ export default function ApolloFreeLab() {
 
                 {noInputs && (
                   <div className="rounded-2xl border border-blue-100 bg-blue-50 p-5 text-sm leading-6 text-blue-950">
-                    No test input is required. Click the button below and V-Bridge will ask Apollo for the current workspace statistics.
+                    No test input is required. Click Run and watch the Fetch/XHR request appear in Chrome Network.
                   </div>
                 )}
 
@@ -449,7 +492,7 @@ export default function ApolloFreeLab() {
                   <button type="submit" disabled={loading} className="rounded-xl bg-[#0b4ea2] px-5 py-3 text-sm font-extrabold text-white shadow-lg transition hover:bg-[#083d80] disabled:opacity-60">
                     {loading ? "Calling Apollo…" : `Run ${active.title}`}
                   </button>
-                  <span className="text-xs leading-5 text-slate-500">V-Bridge server → Apollo. The API key is never sent to the browser.</span>
+                  <span className="text-xs leading-5 text-slate-500">Browser → visible V-Bridge API → server-side Apollo API.</span>
                 </div>
               </form>
             )}
