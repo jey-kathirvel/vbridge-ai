@@ -71,3 +71,91 @@ select option {
 ::-webkit-scrollbar-thumb:hover {
   background: #8ea6c0;
 }
+
+/* V-Bridge Apollo Lab help popovers.
+   The field help icons already expose their full explanation through aria-label.
+   These rules turn that accessible text into a visible tooltip inside the iframe. */
+[aria-label*=" help:"] {
+  position: relative;
+  isolation: isolate;
+}
+
+[aria-label*=" help:"]::before,
+[aria-label*=" help:"]::after {
+  pointer-events: none;
+  position: absolute;
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 120ms ease,
+    transform 120ms ease,
+    visibility 120ms ease;
+}
+
+[aria-label*=" help:"]::after {
+  content: attr(aria-label);
+  left: 50%;
+  bottom: calc(100% + 11px);
+  width: max-content;
+  max-width: min(360px, 78vw);
+  transform: translate(-50%, 5px);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 12px;
+  background: #0f172a;
+  padding: 10px 12px;
+  color: #f8fafc;
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.22);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: normal;
+  text-align: left;
+  text-transform: none;
+  white-space: normal;
+}
+
+[aria-label*=" help:"]::before {
+  content: "";
+  left: 50%;
+  bottom: calc(100% + 5px);
+  transform: translateX(-50%);
+  border-width: 6px 6px 0;
+  border-style: solid;
+  border-color: #0f172a transparent transparent;
+}
+
+[aria-label*=" help:"]:hover::before,
+[aria-label*=" help:"]:hover::after,
+[aria-label*=" help:"]:active::before,
+[aria-label*=" help:"]:active::after,
+[aria-label*=" help:"]:focus::before,
+[aria-label*=" help:"]:focus::after,
+[aria-label*=" help:"]:focus-visible::before,
+[aria-label*=" help:"]:focus-visible::after {
+  opacity: 1;
+  visibility: visible;
+}
+
+[aria-label*=" help:"]:hover::after,
+[aria-label*=" help:"]:active::after,
+[aria-label*=" help:"]:focus::after,
+[aria-label*=" help:"]:focus-visible::after {
+  transform: translate(-50%, 0);
+}
+
+@media (max-width: 640px) {
+  [aria-label*=" help:"]::after {
+    left: auto;
+    right: -10px;
+    width: min(300px, 82vw);
+    transform: translateY(5px);
+  }
+
+  [aria-label*=" help:"]:hover::after,
+  [aria-label*=" help:"]:active::after,
+  [aria-label*=" help:"]:focus::after,
+  [aria-label*=" help:"]:focus-visible::after {
+    transform: translateY(0);
+  }
+}
