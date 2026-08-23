@@ -28,6 +28,14 @@ const allowedOperations = new Set<FreeOperation>([
   "credit-usage",
 ]);
 
+const verifiedFreePlanOperations = new Set<FreeOperation>([
+  "contacts-search",
+  "accounts-search",
+  "users",
+  "api-usage",
+  "credit-usage",
+]);
+
 function text(value: unknown, maxLength = 200): string | undefined {
   if (typeof value !== "string") return undefined;
   const normalized = value.trim();
@@ -45,50 +53,11 @@ function positiveInt(
   return Math.min(parsed, max);
 }
 
-function csv(value: unknown, maxItems = 12): string[] | undefined {
-  if (Array.isArray(value)) {
-    const items = value
-      .filter((item): item is string => typeof item === "string")
-      .map((item) => item.trim())
-      .filter(Boolean)
-      .slice(0, maxItems);
-    return items.length ? items : undefined;
-  }
-
-  const source = text(value, 500);
-  if (!source) return undefined;
-  const items = source
-    .split(",")
-    .map((item) => item.trim())
-    .filter(Boolean)
-    .slice(0, maxItems);
-  return items.length ? items : undefined;
-}
-
 function buildRequest(
-  operation: FreeOperation,
+  operation: Exclude<FreeOperation, "people-search">,
   payload: Record<string, unknown>,
 ): { path: string; options: ApolloRequestOptions } {
   switch (operation) {
-    case "people-search":
-      return {
-        path: "/api/v1/mixed_people/api_search",
-        options: {
-          method: "POST",
-          query: {
-            "person_titles[]": csv(payload.personTitles),
-            "person_seniorities[]": csv(payload.personSeniorities),
-            "person_locations[]": csv(payload.personLocations),
-            "organization_locations[]": csv(payload.organizationLocations),
-            q_keywords: text(payload.keywords),
-            include_similar_titles:
-              payload.includeSimilarTitles === false ? false : true,
-            page: positiveInt(payload.page, 1, 500),
-            per_page: positiveInt(payload.perPage, 10, 100),
-          },
-        },
-      };
-
     case "contacts-search":
       return {
         path: "/api/v1/contacts/search",
@@ -130,13 +99,13 @@ function buildRequest(
     case "api-usage":
       return {
         path: "/api/v1/usage_stats/api_usage_stats",
-        options: { method: "POST" },
+        options: { method: "POST", body: {} },
       };
 
     case "credit-usage":
       return {
         path: "/api/v1/usage_stats/credit_usage_stats",
-        options: { method: "POST" },
+        options: { method: "POST", body: {} },
       };
   }
 }
@@ -180,8 +149,25 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  if (!verifiedFreePlanOperations.has(input.operation)) {
+    return NextResponse.json(
+      {
+        ok: false,
+        operation: input.operation,
+        code: "APOLLO_PLAN_BLOCKED",
+        message:
+          "This Apollo endpoint is not included in the currently verified Free plan. V-Bridge blocks the request before contacting Apollo.",
+        plan: "FREE",
+        verifiedFreePlan: false,
+        secretExposed: false,
+      },
+      { status: 403 },
+    );
+  }
+
+  const operation = input.operation as Exclude<FreeOperation, "people-search">;
   const payload = input.payload ?? {};
-  const upstream = buildRequest(input.operation, payload);
+  const upstream = buildRequest(operation, payload);
   const result = await apolloRequest<unknown>(
     upstream.path,
     upstream.options,
@@ -191,8 +177,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         ok: false,
-        operation: input.operation,
+        operation,
         error: result.error,
+        plan: "FREE",
+        verifiedFreePlan: true,
         secretExposed: false,
       },
       { status: result.status },
@@ -201,7 +189,9 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json({
     ok: true,
-    operation: input.operation,
+    operation,
+    plan: "FREE",
+    verifiedFreePlan: true,
     creditMode: "ZERO_CREDIT_ENDPOINT",
     status: result.status,
     requestId: result.requestId,
