@@ -24,18 +24,22 @@ function buildUrl(
     ? path
     : `/${path}`;
 
-  const url = new URL(
-    `${baseUrl}${normalizedPath}`,
-  );
+  const url = new URL(`${baseUrl}${normalizedPath}`);
 
   if (query) {
     for (const [key, value] of Object.entries(query)) {
-      if (
-        value !== undefined &&
-        value !== null
-      ) {
-        url.searchParams.set(key, String(value));
+      if (value === undefined || value === null) {
+        continue;
       }
+
+      if (Array.isArray(value)) {
+        for (const item of value) {
+          url.searchParams.append(key, String(item));
+        }
+        continue;
+      }
+
+      url.searchParams.set(key, String(value));
     }
   }
 
@@ -57,20 +61,14 @@ export async function apolloRequest<T>(
   options: ApolloRequestOptions = {},
 ): Promise<ApolloResult<T>> {
   const config = requireApolloConfig();
-
-  const timeoutMs =
-    options.timeoutMs ?? config.timeoutMs;
-
-  const timeoutController =
-    new AbortController();
-
+  const timeoutMs = options.timeoutMs ?? config.timeoutMs;
+  const timeoutController = new AbortController();
   const timeoutId = setTimeout(
     () => timeoutController.abort(),
     timeoutMs,
   );
 
-  const abortFromCaller = () =>
-    timeoutController.abort();
+  const abortFromCaller = () => timeoutController.abort();
 
   options.signal?.addEventListener(
     "abort",
@@ -150,7 +148,6 @@ export async function apolloRequest<T>(
     return networkFailure();
   } finally {
     clearTimeout(timeoutId);
-
     options.signal?.removeEventListener(
       "abort",
       abortFromCaller,
