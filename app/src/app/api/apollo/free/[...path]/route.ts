@@ -9,37 +9,49 @@ type RouteContext = {
 
 type JsonRecord = Record<string, unknown>;
 
-type VerifiedRoute = {
+type ApolloProxyRoute = {
   browserPath: string;
   upstreamPath: string;
   upstreamMethod: "GET" | "POST";
+  planStatus: "FREE_VERIFIED" | "ZERO_CREDIT_ACCESS_UNVERIFIED";
 };
 
-const verifiedRoutes: Record<string, VerifiedRoute> = {
+const verifiedRoutes: Record<string, ApolloProxyRoute> = {
   "contacts/search": {
     browserPath: "/api/apollo/free/contacts/search",
     upstreamPath: "/api/v1/contacts/search",
     upstreamMethod: "POST",
+    planStatus: "FREE_VERIFIED",
   },
   "accounts/search": {
     browserPath: "/api/apollo/free/accounts/search",
     upstreamPath: "/api/v1/accounts/search",
     upstreamMethod: "POST",
+    planStatus: "FREE_VERIFIED",
   },
   "users/search": {
     browserPath: "/api/apollo/free/users/search",
     upstreamPath: "/api/v1/users/search",
     upstreamMethod: "GET",
+    planStatus: "FREE_VERIFIED",
   },
   "usage/api": {
     browserPath: "/api/apollo/free/usage/api",
     upstreamPath: "/api/v1/usage_stats/api_usage_stats",
     upstreamMethod: "POST",
+    planStatus: "FREE_VERIFIED",
   },
   "usage/credits": {
     browserPath: "/api/apollo/free/usage/credits",
     upstreamPath: "/api/v1/usage_stats/credit_usage_stats",
     upstreamMethod: "POST",
+    planStatus: "FREE_VERIFIED",
+  },
+  "deals/create": {
+    browserPath: "/api/apollo/free/deals/create",
+    upstreamPath: "/api/v1/opportunities",
+    upstreamMethod: "POST",
+    planStatus: "ZERO_CREDIT_ACCESS_UNVERIFIED",
   },
 };
 
@@ -55,6 +67,30 @@ function text(value: unknown, maxLength = 200): string | undefined {
   return normalized ? normalized.slice(0, maxLength) : undefined;
 }
 
+function validDate(value: unknown): string | undefined {
+  const normalized = text(value, 10);
+  if (!normalized) return undefined;
+  return /^\d{4}-\d{2}-\d{2}$/.test(normalized) ? normalized : undefined;
+}
+
+function validApolloId(value: unknown): string | undefined {
+  const normalized = text(value, 80);
+  if (!normalized) return undefined;
+  return /^[A-Za-z0-9_-]+$/.test(normalized) ? normalized : undefined;
+}
+
+function uniqueDealName(baseName: string): string {
+  const now = new Date();
+  const stamp = now
+    .toISOString()
+    .replace(/[-:TZ.]/g, "")
+    .slice(0, 14);
+  const random = Math.random().toString(36).slice(2, 6).toUpperCase();
+  const suffix = `${stamp}-${random}`;
+  const maxBaseLength = Math.max(1, 180 - suffix.length - 3);
+  return `${baseName.slice(0, maxBaseLength)} - ${suffix}`;
+}
+
 async function readBody(request: NextRequest): Promise<JsonRecord> {
   if (request.method === "GET") return {};
   try {
@@ -67,28 +103,44 @@ async function readBody(request: NextRequest): Promise<JsonRecord> {
   }
 }
 
-function responseHeaders(route: VerifiedRoute, upstreamStatus?: number): HeadersInit {
+function responseHeaders(route: ApolloProxyRoute, upstreamStatus?: number): HeadersInit {
   return {
     "X-VBridge-Apollo-Upstream": route.upstreamPath,
     "X-VBridge-Apollo-Upstream-Method": route.upstreamMethod,
     "X-VBridge-Apollo-Upstream-Status": upstreamStatus ? String(upstreamStatus) : "NOT_CALLED",
-    "X-VBridge-Apollo-Plan": "FREE_VERIFIED",
+    "X-VBridge-Apollo-Plan": route.planStatus,
     "X-VBridge-Apollo-Server-Side": "true",
     "X-VBridge-Secret-Exposed": "false",
+  };
+}
+
+function dealViewRoute(dealId: string): ApolloProxyRoute {
+  return {
+    browserPath: `/api/apollo/free/deals/view/${dealId}`,
+    upstreamPath: `/api/v1/opportunities/${dealId}`,
+    upstreamMethod: "GET",
+    planStatus: "ZERO_CREDIT_ACCESS_UNVERIFIED",
   };
 }
 
 async function execute(request: NextRequest, context: RouteContext) {
   const { path } = await context.params;
   const routeKey = path.join("/");
-  const route = verifiedRoutes[routeKey];
+
+  let route = verifiedRoutes[routeKey];
+  let dealId: string | undefined;
+
+  if (!route && path.length === 3 && path[0] === "deals" && path[1] === "view") {
+    dealId = validApolloId(path[2]);
+    if (dealId) route = dealViewRoute(dealId);
+  }
 
   if (!route) {
     return NextResponse.json(
       {
         ok: false,
         code: "APOLLO_FREE_ROUTE_NOT_FOUND",
-        message: "This Apollo operation is not in the verified Free-plan route list.",
+        message: "This Apollo operation is not available through the V-Bridge lab route list.",
       },
       { status: 404 },
     );
@@ -122,6 +174,7 @@ async function execute(request: NextRequest, context: RouteContext) {
   );
 
   let options: ApolloRequestOptions;
+  let createdDealName: string | undefined;
 
   switch (routeKey) {
     case "contacts/search":
@@ -158,7 +211,79 @@ async function execute(request: NextRequest, context: RouteContext) {
       options = { method: "POST" };
       break;
 
+    case "deals/create": {
+      const baseName = text(body.name, 150);
+      if (!baseName) {
+        return NextResponse.json(
+          {
+            ok: false,
+            code: "DEAL_NAME_REQUIRED",
+            message: "Deal name is required.",
+          },
+          { status: 400, headers: responseHeaders(route) },
+        );
+      }
+
+      const closedDateRaw = text(body.closedDate ?? body.closed_date, 20);
+      const closedDate = validDate(closedDateRaw);
+      if (closedDateRaw && !closedDate) {
+        return NextResponse.json(
+          {
+            ok: false,
+            code: "INVALID_CLOSED_DATE",
+            message: "Closed date must use YYYY-MM-DD format.",
+          },
+          { status: 400, headers: responseHeaders(route) },
+        );
+      }
+
+      const accountIdRaw = text(body.accountId ?? body.account_id, 100);
+      const accountId = validApolloId(accountIdRaw);
+      if (accountIdRaw && !accountId) {
+        return NextResponse.json(
+          {
+            ok: false,
+            code: "INVALID_ACCOUNT_ID",
+            message: "Account ID contains unsupported characters.",
+          },
+          { status: 400, headers: responseHeaders(route) },
+        );
+      }
+
+      const amountRaw = body.amount;
+      const amount = amountRaw === undefined || amountRaw === null || amountRaw === ""
+        ? undefined
+        : String(amountRaw).trim();
+
+      if (amount && !/^\d+(?:\.\d{1,2})?$/.test(amount)) {
+        return NextResponse.json(
+          {
+            ok: false,
+            code: "INVALID_DEAL_AMOUNT",
+            message: "Amount must be a plain number without commas or currency symbols.",
+          },
+          { status: 400, headers: responseHeaders(route) },
+        );
+      }
+
+      createdDealName = uniqueDealName(baseName);
+      options = {
+        method: "POST",
+        body: {
+          name: createdDealName,
+          ...(amount !== undefined ? { amount } : {}),
+          ...(closedDate ? { closed_date: closedDate } : {}),
+          ...(accountId ? { account_id: accountId } : {}),
+        },
+      };
+      break;
+    }
+
     default:
+      if (dealId) {
+        options = { method: "GET" };
+        break;
+      }
       return NextResponse.json({ ok: false }, { status: 404 });
   }
 
@@ -172,6 +297,8 @@ async function execute(request: NextRequest, context: RouteContext) {
         apolloEndpoint: route.upstreamPath,
         apolloMethod: route.upstreamMethod,
         serverSide: true,
+        planAccessVerified: route.planStatus === "FREE_VERIFIED",
+        zeroCreditEndpoint: true,
         error: result.error,
         secretExposed: false,
       },
@@ -187,9 +314,10 @@ async function execute(request: NextRequest, context: RouteContext) {
       apolloMethod: route.upstreamMethod,
       apolloHttpStatus: result.status,
       serverSide: true,
-      plan: "FREE",
-      verifiedFreePlan: true,
+      planAccessVerified: true,
+      zeroCreditEndpoint: true,
       creditMode: "ZERO_CREDIT_ENDPOINT",
+      ...(createdDealName ? { createdDealName } : {}),
       requestId: result.requestId,
       data: result.data,
       secretExposed: false,
